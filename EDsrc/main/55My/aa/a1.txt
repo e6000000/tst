@@ -1,4 +1,5 @@
-1   aa1 tst14.txt  
+1   aa1 tst14.txt   step  step  step  step 2
+
 
 https://github.com/e6000000?tab=repositories
 
@@ -9,4 +10,5 @@ https://github.com/new       14 x tab
 
 ---idxq_2645---2025_11_13---08_11_25
 ---idxq_2646---2025_11_13---08_11_28
-
+ Func AppendFiles(ByRef $arFil)     ;; 5batINC-2460.au3     ;; For $i = 2 To UBound($arFil) - 1 Step 2
+ 
