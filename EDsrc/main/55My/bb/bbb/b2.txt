@@ -1,1 +1,1 @@
-2  bbb2
+   ./bb/bbb/b2.txt
