@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenClaw on Hetzner VPS - Complete Workflow (Windows 10 & Ubuntu)</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Consolas, Menlo, monospace;
+      background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 100%);
+      color: #e0e0e0;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      border-bottom: 2px solid #ff6b35;
+      padding-bottom: 20px;
+    }
+    h1 {
+      color: #ff6b35;
+      font-size: 2.5em;
+      margin: 0 0 10px 0;
+    }
+    .subtitle {
+      color: #aaa;
+      font-size: 1.1em;
+      margin: 0;
+    }
+    h2, h3, h4, h5 {
+      margin-top: 1.5em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      user-select: none;
+      transition: color 0.2s;
+    }
+    h2:hover, h3:hover, h4:hover, h5:hover {
+      color: #ff9966;
+    }
+    .fold-toggle {
+      font-weight: bold;
+      margin-right: 10px;
+      color: #ff6b35;
+      font-size: 1.2em;
+      min-width: 25px;
+      text-align: center;
+    }
+    .folded > .fold-content {
+      display: none;
+    }
+    .fold-section {
+      margin-bottom: 20px;
+    }
+    .fold-content {
+      padding-left: 20px;
+      border-left: 3px solid #ff6b35;
+      animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    pre, code {
+      background-color: #1a1a2e;
+      color: #00ff88;
+      padding: 10px 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      border: 1px solid #333;
+      font-family: 'Courier New', monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      margin: 12px 0;
+      padding: 15px;
+    }
+    code {
+      padding: 4px 8px;
+      display: inline-block;
+    }
+    .note {
+      background-color: #2a3f5f;
+      border-left: 4px solid #4a7ba7;
+      padding: 12px 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      color: #b0c4de;
+    }
+    .warning {
+      background-color: #5f3a2a;
+      border-left: 4px solid #a74a4a;
+      padding: 12px 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      color: #e0b0a0;
+    }
+    .success {
+      background-color: #2a5f3a;
+      border-left: 4px solid #4aa74a;
+      padding: 12px 15px;
+      margin: 15px 0;
+      border-radius: 4px;
+      color: #b0e0b0;
+    }
+    a {
+      color: #4a9eff;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    a:hover {
+      color: #7ab8ff;
+      text-decoration: underline;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      background-color: #1a1a2e;
+      border: 1px solid #333;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #333;
+    }
+    th {
+      background-color: #2a2a3e;
+      color: #ff6b35;
+      font-weight: bold;
+    }
+    tr:hover {
+      background-color: #252535;
+    }
+    .platform-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.85em;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    .windows-badge {
+      background-color: #0078d4;
+      color: white;
+    }
+    .ubuntu-badge {
+      background-color: #e95420;
+      color: white;
+    }
+    .both-badge {
+      background-color: #6c5ce7;
+      color: white;
+    }
+    .step-number {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      background-color: #ff6b35;
+      color: white;
+      text-align: center;
+      line-height: 28px;
+      border-radius: 50%;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+    ul, ol {
+      margin: 10px 0;
+      padding-left: 30px;
+    }
+    li {
+      margin: 8px 0;
+    }
+    .toc {
+      background-color: #1a1a2e;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+    .toc h3 {
+      margin-top: 0;
+      cursor: default;
+    }
+    .toc h3:hover {
+      color: #e0e0e0;
+    }
+    .toc ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .toc li {
+      margin: 6px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+    .toc li:before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: #ff6b35;
+    }
+    .toc a {
+      color: #4a9eff;
+    }
+  </style>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      var headings = document.querySelectorAll("h1, h2, h3, h4, h5");
+      headings.forEach(function (h) {
+        if (h.tagName === "H1") return; // Skip main title
+        var level = parseInt(h.tagName.substring(1), 10);
+        var wrapper = document.createElement("div");
+        wrapper.className = "fold-section";
+        var content = document.createElement("div");
+        content.className = "fold-content";
+
+        // Insert toggle marker
+        var toggle = document.createElement("span");
+        toggle.className = "fold-toggle";
+        toggle.textContent = "[-]";
+        h.insertBefore(toggle, h.firstChild);
+
+        // Move following siblings of lower level into content
+        var next = h.nextSibling;
+        while (next) {
+          if (next.nodeType === 1) {
+            var tag = next.tagName ? next.tagName.toLowerCase() : "";
+            if (tag === "h1" || tag === "h2" || tag === "h3" || tag === "h4" || tag === "h5") {
+              var nextLevel = parseInt(tag.substring(1), 10);
+              if (nextLevel <= level) break;
+            }
+          }
+          var toMove = next;
+          next = next.nextSibling;
+          content.appendChild(toMove);
+        }
+
+        // Wrap heading + content
+        h.parentNode.insertBefore(wrapper, h);
+        wrapper.appendChild(h);
+        wrapper.appendChild(content);
+
+        // Click handler
+        h.addEventListener("click", function (ev) {
+          if (ev.target.tagName.toLowerCase() === "a") return;
+          wrapper.classList.toggle("folded");
+          var t = h.querySelector(".fold-toggle");
+          if (t) t.textContent = wrapper.classList.contains("folded") ? "[+]" : "[-]";
+        });
+      });
+    });
+  </script>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+  <h1>🦞 OpenClaw on Hetzner VPS</h1>
+  <p class="subtitle">Complete Workflow for Windows 10 & Ubuntu Users (No Docker)</p>
+</header>
+
+<div class="toc">
+  <h3>📋 Quick Navigation</h3>
+  <ul>
+    <li><a href="#concept">Concept & Architecture</a></li>
+    <li><a href="#hetzner-panels">Hetzner Panels Guide</a></li>
+    <li><a href="#project-vps">Create Project & VPS</a></li>
+    <li><a href="#ssh-keys">SSH Keys Setup</a></li>
+    <li><a href="#basic-setup">Basic VPS Setup</a></li>
+    <li><a href="#firewall">Firewall Configuration</a></li>
+    <li><a href="#openclaw-install">OpenClaw Installation</a></li>
+    <li><a href="#n8n-setup">n8n Setup (Optional)</a></li>
+    <li><a href="#remote-access">Remote Access & Tunneling</a></li>
+    <li><a href="#troubleshooting">Troubleshooting & FAQ</a></li>
+  </ul>
+</div>
+
+<h2 id="concept">Concept & Architecture</h2>
+<p><strong>Goal:</strong> Run the OpenClaw Gateway on a Hetzner VPS (Ubuntu, no Docker), connect from your laptop or phone, keep it always on.</p>
+
+<h3>Roles & Environments</h3>
+<table>
+  <tr>
+    <th>Component</th>
+    <th>Platform</th>
+    <th>Role</th>
+  </tr>
+  <tr>
+    <td><strong>Gateway</strong></td>
+    <td>Hetzner VPS (Ubuntu)</td>
+    <td>Runs OpenClaw, owns state and workspace, always on</td>
+  </tr>
+  <tr>
+    <td><strong>Client</strong></td>
+    <td>Windows 10 / Ubuntu Laptop</td>
+    <td>Connects via Control UI, SSH, or Tailscale</td>
+  </tr>
+  <tr>
+    <td><strong>Source of Truth</strong></td>
+    <td>VPS</td>
+    <td>Backup state and workspace from here</td>
+  </tr>
+</table>
+
+<h3>VPS Advantages & Trade-offs</h3>
+<div class="success">
+  <strong>Advantages:</strong> Always-on, stable network, no laptop sleep issues, easier maintenance, headless operation.
+</div>
+<div class="note">
+  <strong>Trade-off:</strong> Headless browser (no visible window). Workaround: Use nodes to see agent activity in a real browser on your local machine.
+</div>
+
+<h2 id="hetzner-panels">Hetzner Panels Guide</h2>
+
+<h3>Wrong Panel: konsoleH (Webhosting)</h3>
+<div class="warning">
+  <strong>Do NOT use konsoleH for VPS setup.</strong> This is the old Hetzner webhosting panel for domains, webspace, and mail packages. It shows "Produktuebersicht", "Neue Bestellung", etc.
+</div>
+
+<h3>Correct Panel: Hetzner Cloud Console</h3>
+<p>Open this URL in your browser:</p>
+<pre><code>https://console.hetzner.cloud</code></pre>
+<p>You are in the correct place if you see:</p>
+<ul>
+  <li>"Projects" section</li>
+  <li>"+ Create Server" or "+ SERVER ERSTELLEN" button</li>
+  <li>Tabs like "Costs", "Activity", "Limits"</li>
+  <li>Project tiles (cards)</li>
+</ul>
+
+<h2 id="project-vps">Create Project & VPS</h2>
+
+<h3>Step 1: Create a New Project</h3>
+<p>In the Hetzner Cloud Console:</p>
+<ol>
+  <li>Click <strong>"+ New project"</strong></li>
+  <li>Choose a name, for example:
+    <ul>
+      <li><code>OpenClaw</code></li>
+      <li><code>ClaudiaHetzner</code></li>
+      <li><code>VPS-OpenClaw</code></li>
+    </ul>
+  </li>
+</ol>
+
+<h3>Step 2: Create the VPS</h3>
+<p>Inside your project, click <strong>"+ Create Server"</strong> and configure:</p>
+<table>
+  <tr>
+    <th>Setting</th>
+    <th>Recommendation</th>
+    <th>Notes</th>
+  </tr>
+  <tr>
+    <td><strong>Location</strong></td>
+    <td>Falkenstein or Nuremberg (Germany)</td>
+    <td>Choose based on latency to your location</td>
+  </tr>
+  <tr>
+    <td><strong>Image</strong></td>
+    <td>Ubuntu 22.04 LTS</td>
+    <td>Or latest LTS recommended by OpenClaw docs</td>
+  </tr>
+  <tr>
+    <td><strong>Type</strong></td>
+    <td>CPX32 (4 vCPU, 8GB RAM, 160GB NVMe)</td>
+    <td>€13.08/month. Ideal for OpenClaw + n8n</td>
+  </tr>
+  <tr>
+    <td><strong>SSH Key</strong></td>
+    <td>Add your public key</td>
+    <td>Generate below if you don't have one yet</td>
+  </tr>
+  <tr>
+    <td><strong>Volume / Network</strong></td>
+    <td>Leave defaults</td>
+    <td>Can be configured later if needed</td>
+  </tr>
+  <tr>
+    <td><strong>Server Name</strong></td>
+    <td><code>openclaw-vps</code></td>
+    <td>Use a descriptive name</td>
+  </tr>
+</table>
+
+<p>Click <strong>"Create Server"</strong>. After 10-20 seconds, your VPS will be running with an IPv4 address.</p>
+
+<h2 id="ssh-keys">SSH Keys Setup</h2>
+
+<h3>Windows 10: Generate SSH Key</h3>
+<p><span class="platform-badge windows-badge">Windows 10</span> Open PowerShell and run:</p>
+<pre><code>ssh-keygen -t ed25519 -C "openclaw-vps"</code></pre>
+<p>Default paths on Windows:</p>
+<ul>
+  <li><strong>Private key:</strong> <code>C:\Users\YOUR_USER\.ssh\id_ed25519</code></li>
+  <li><strong>Public key:</strong> <code>C:\Users\YOUR_USER\.ssh\id_ed25519.pub</code></li>
+</ul>
+
+<h3>Ubuntu: Generate SSH Key</h3>
+<p><span class="platform-badge ubuntu-badge">Ubuntu</span> Open terminal and run:</p>
+<pre><code>ssh-keygen -t ed25519 -C "openclaw-vps"</code></pre>
+<p>Default paths on Ubuntu:</p>
+<ul>
+  <li><strong>Private key:</strong> <code>~/.ssh/id_ed25519</code></li>
+  <li><strong>Public key:</strong> <code>~/.ssh/id_ed25519.pub</code></li>
+</ul>
+
+<h3>Custom Key Mapping (Optional)</h3>
+<p>If you use custom naming in scripts:</p>
+<table>
+  <tr>
+    <th>Windows File</th>
+    <th>Ubuntu File</th>
+    <th>Purpose</th>
+  </tr>
+  <tr>
+    <td><code>hetzsecr.txt</code></td>
+    <td><code>hetzsecr</code></td>
+    <td>Private key (your secret)</td>
+  </tr>
+  <tr>
+    <td><code>hetzpub.txt</code></td>
+    <td><code>hetzsecr.pub</code></td>
+    <td>Public key (goes to the server)</td>
+  </tr>
+</table>
+
+<h3>First SSH Login as Root</h3>
+<p><span class="platform-badge both-badge">Windows 10 & Ubuntu</span></p>
+<pre><code>ssh root@YOUR_VPS_IP</code></pre>
+<p>If you added your public key correctly, you log in without a password. If not, Hetzner may have given you a root password for the first login.</p>
+
+<h2 id="basic-setup">Basic VPS Setup</h2>
+
+<h3>Step 1: Update the System</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span> Run as root or with sudo:</p>
+<pre><code>sudo apt update && sudo apt upgrade -y</code></pre>
+
+<h3>Step 2: Create Non-Root User</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span> It is better not to run everything as root:</p>
+<pre><code>adduser openclaw
+usermod -aG sudo openclaw</code></pre>
+<p>Follow the prompts to set a password and user details.</p>
+
+<h3>Step 3: Set Up SSH for New User</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span> Still logged in as root:</p>
+<pre><code>mkdir -p /home/openclaw/.ssh
+chmod 700 /home/openclaw/.ssh
+nano /home/openclaw/.ssh/authorized_keys</code></pre>
+<p>Paste your public key into <code>authorized_keys</code>, then:</p>
+<pre><code>chmod 600 /home/openclaw/.ssh/authorized_keys
+chown -R openclaw:openclaw /home/openclaw/.ssh</code></pre>
+
+<h3>Step 4: Harden SSH (Optional, Can Be Done Later)</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span> Edit SSH configuration:</p>
+<pre><code>sudo nano /etc/ssh/sshd_config</code></pre>
+<p>Set these lines:</p>
+<pre><code>PermitRootLogin no
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+UsePAM no
+PubkeyAuthentication yes</code></pre>
+<p>Restart SSH:</p>
+<pre><code>sudo systemctl restart ssh</code></pre>
+
+<h3>Step 5: Reconnect as Non-Root User</h3>
+<p><span class="platform-badge both-badge">Windows 10 & Ubuntu</span> From now on:</p>
+<pre><code>ssh openclaw@YOUR_VPS_IP</code></pre>
+
+<h2 id="firewall">Firewall Configuration</h2>
+
+<div class="note">
+  <strong>Timing:</strong> You can configure the firewall after OpenClaw is running. SSH port (22) is open by default, so you can always connect.
+</div>
+
+<h3>Enable UFW Firewall</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span></p>
+<pre><code>sudo ufw allow ssh
+sudo ufw enable</code></pre>
+
+<h3>Allow OpenClaw Port (18789)</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span> For SSH tunnel access only (no public exposure):</p>
+<pre><code>sudo ufw allow from 127.0.0.1 to 127.0.0.1 port 18789</code></pre>
+
+<h3>Allow n8n Port (5678, Optional)</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span> If using n8n:</p>
+<pre><code>sudo ufw allow from 127.0.0.1 to 127.0.0.1 port 5678</code></pre>
+
+<h3>View Firewall Rules</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span></p>
+<pre><code>sudo ufw status verbose</code></pre>
+
+<h2 id="openclaw-install">OpenClaw Installation</h2>
+
+<h3>Official Installer Script</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span> The installer script:</p>
+<ul>
+  <li>Downloads the OpenClaw CLI</li>
+  <li>Installs it globally via npm</li>
+  <li>Launches the onboarding wizard</li>
+  <li>Handles Node.js detection and installation</li>
+</ul>
+
+<p>Run this command on your VPS:</p>
+<pre><code>cd /home/openclaw
+curl -fsSL https://openclaw.ai/install.sh | bash</code></pre>
+
+<p>Follow the onboarding wizard to configure:</p>
+<ul>
+  <li>API keys (OpenAI, etc.)</li>
+  <li>Basic configuration</li>
+  <li>Workspace path</li>
+  <li>Other settings</li>
+</ul>
+
+<h3>Gateway, State, and Workspace</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span> After installation, OpenClaw creates:</p>
+<ul>
+  <li><strong>Gateway config:</strong> <code>/home/openclaw/.openclaw</code></li>
+  <li><strong>Workspace:</strong> <code>/home/openclaw/openclaw-workspace</code></li>
+</ul>
+
+<p>Check your home directory:</p>
+<pre><code>ls -la /home/openclaw</code></pre>
+
+<h3>Start OpenClaw Gateway</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span></p>
+<pre><code>openclaw channels login openclaw gateway --port 18789</code></pre>
+
+<p>The gateway will start on port 18789 (localhost only by default). Access it via SSH tunnel from your local machine.</p>
+
+<h2 id="n8n-setup">n8n Setup (Optional)</h2>
+
+<h3>Install Node.js (if not already installed)</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span></p>
+<pre><code>curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs</code></pre>
+
+<h3>Install n8n</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span></p>
+<pre><code>npm install -g n8n</code></pre>
+
+<h3>Install PM2 (Process Manager)</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span></p>
+<pre><code>npm install -g pm2</code></pre>
+
+<h3>Start n8n with PM2</h3>
+<p><span class="platform-badge ubuntu-badge">VPS (Ubuntu)</span></p>
+<pre><code>pm2 start n8n
+pm2 save
+pm2 startup</code></pre>
+
+<p>n8n will run on port 5678 and restart automatically after reboot.</p>
+
+<h2 id="remote-access">Remote Access & Tunneling</h2>
+
+<h3>SSH Tunnel for OpenClaw Control UI</h3>
+<p><span class="platform-badge both-badge">Windows 10 & Ubuntu</span> From your local machine:</p>
+<pre><code>ssh -L 18789:localhost:18789 openclaw@YOUR_VPS_IP</code></pre>
+
+<p>Then open your browser and navigate to:</p>
+<pre><code>http://127.0.0.1:18789</code></pre>
+
+<h3>SSH Tunnel for n8n (Optional)</h3>
+<p><span class="platform-badge both-badge">Windows 10 & Ubuntu</span> From your local machine:</p>
+<pre><code>ssh -L 5678:localhost:5678 openclaw@YOUR_VPS_IP</code></pre>
+
+<p>Then open your browser and navigate to:</p>
+<pre><code>http://127.0.0.1:5678</code></pre>
+
+<h3>Keep Tunnels Running in Background</h3>
+<p><span class="platform-badge windows-badge">Windows 10</span> Use a terminal multiplexer or run in separate PowerShell windows. For persistent tunnels, consider using a tool like <code>autossh</code>.</p>
+
+<p><span class="platform-badge ubuntu-badge">Ubuntu</span> Use <code>screen</code> or <code>tmux</code>:</p>
+<pre><code>tmux new-session -d -s openclaw-tunnel "ssh -L 18789:localhost:18789 openclaw@YOUR_VPS_IP"
+tmux new-session -d -s n8n-tunnel "ssh -L 5678:localhost:5678 openclaw@YOUR_VPS_IP"</code></pre>
+
+<h2 id="troubleshooting">Troubleshooting & FAQ</h2>
+
+<h3>Cannot Connect to VPS via SSH</h3>
+<div class="warning">
+  <strong>Issue:</strong> "Connection refused" or "Permission denied".
+</div>
+<p><strong>Solutions:</strong></p>
+<ul>
+  <li>Check that your SSH key is in <code>~/.ssh/authorized_keys</code> on the VPS</li>
+  <li>Verify SSH permissions: <code>chmod 700 ~/.ssh</code> and <code>chmod 600 ~/.ssh/authorized_keys</code></li>
+  <li>Ensure SSH service is running: <code>sudo systemctl status ssh</code></li>
+  <li>Check firewall: <code>sudo ufw status</code></li>
+</ul>
+
+<h3>OpenClaw Gateway Won't Start</h3>
+<div class="warning">
+  <strong>Issue:</strong> "Command not found" or port already in use.
+</div>
+<p><strong>Solutions:</strong></p>
+<ul>
+  <li>Verify installation: <code>which openclaw</code></li>
+  <li>Check Node.js: <code>node --version</code></li>
+  <li>Check if port 18789 is in use: <code>sudo lsof -i :18789</code></li>
+  <li>Kill any existing process: <code>sudo kill -9 PID</code></li>
+  <li>Try starting with a different port: <code>openclaw channels login openclaw gateway --port 18790</code></li>
+</ul>
+
+<h3>Cannot Access OpenClaw UI via SSH Tunnel</h3>
+<div class="warning">
+  <strong>Issue:</strong> Tunnel established but browser shows "connection refused".
+</div>
+<p><strong>Solutions:</strong></p>
+<ul>
+  <li>Verify OpenClaw is running: <code>ps aux | grep openclaw</code></li>
+  <li>Check OpenClaw logs: <code>tail -f ~/.openclaw/logs/*</code></li>
+  <li>Verify tunnel is active: <code>netstat -an | grep 18789</code></li>
+  <li>Try a fresh tunnel connection</li>
+</ul>
+
+<h3>n8n Not Starting with PM2</h3>
+<div class="warning">
+  <strong>Issue:</strong> PM2 shows n8n as "stopped" or "errored".
+</div>
+<p><strong>Solutions:</strong></p>
+<ul>
+  <li>Check PM2 logs: <code>pm2 logs n8n</code></li>
+  <li>Verify Node.js version: <code>node --version</code> (should be 18+)</li>
+  <li>Restart PM2: <code>pm2 restart n8n</code></li>
+  <li>Check disk space: <code>df -h</code></li>
+</ul>
+
+<h3>Firewall Blocking Connections</h3>
+<div class="warning">
+  <strong>Issue:</strong> SSH tunnel works but services are unreachable.
+</div>
+<p><strong>Solutions:</strong></p>
+<ul>
+  <li>Check UFW status: <code>sudo ufw status verbose</code></li>
+  <li>Temporarily disable UFW for testing: <code>sudo ufw disable</code></li>
+  <li>Re-enable and add rules: <code>sudo ufw enable</code></li>
+  <li>Verify rules are correct: <code>sudo ufw show added</code></li>
+</ul>
+
+<h3>Backup & Restore Workflow</h3>
+<p><strong>Backup OpenClaw state:</strong></p>
+<pre><code>tar -czf openclaw-backup-$(date +%Y%m%d).tar.gz ~/.openclaw ~/openclaw-workspace</code></pre>
+
+<p><strong>Download backup to local machine:</strong></p>
+<pre><code>scp openclaw@YOUR_VPS_IP:~/openclaw-backup-*.tar.gz .</code></pre>
+
+<p><strong>Restore from backup:</strong></p>
+<pre><code>tar -xzf openclaw-backup-*.tar.gz -C ~</code></pre>
+
+<div class="success">
+  <strong>Congratulations!</strong> Your OpenClaw instance is now running on Hetzner VPS. You can connect from Windows 10 or Ubuntu, and the folding sections help you keep learned content collapsed to avoid repetition.
+</div>
+
+</div>
+
+</body>
+</html>
